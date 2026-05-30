@@ -6,14 +6,17 @@ import {
   BufferGeometry,
   Color,
   ConeGeometry,
+  CircleGeometry,
   CylinderGeometry,
   DirectionalLight,
+  DoubleSide,
   Float32BufferAttribute,
   FogExp2,
   Group,
   HemisphereLight,
   IcosahedronGeometry,
   InstancedMesh,
+  Material,
   MathUtils,
   MeshBasicMaterial,
   Mesh,
@@ -26,6 +29,8 @@ import {
   Points,
   PointsMaterial,
   Scene,
+  Shape,
+  ShapeGeometry,
   SphereGeometry,
   TorusGeometry,
   Vector3,
@@ -34,6 +39,104 @@ import type { PrototypeConfig } from "./config"
 import type { PrototypeAssets } from "./loader"
 import { createPrototypeInput } from "./input"
 import { createReducedMotionTracker } from "./reducedMotion"
+
+type FlashMaterialEntry = {
+  material: Material
+  baseColor: Color | null
+  baseEmissive: Color | null
+  baseEmissiveIntensity: number | null
+}
+
+const flashWhite = new Color(0xffffff)
+
+const collectFlashMaterials = (root: Object3D): FlashMaterialEntry[] => {
+  const entries: FlashMaterialEntry[] = []
+  const seen = new Set<Material>()
+  root.traverse((obj) => {
+    const maybe = obj as { material?: unknown }
+    const mat = maybe.material as Material | Material[] | undefined
+    if (!mat) return
+    const mats = Array.isArray(mat) ? mat : [mat]
+    for (const entry of mats) {
+      if (!entry || seen.has(entry)) continue
+      seen.add(entry)
+      const anyMat = entry as unknown as {
+        color?: unknown
+        emissive?: unknown
+        emissiveIntensity?: unknown
+      }
+      const baseColor = anyMat.color instanceof Color ? anyMat.color.clone() : null
+      const baseEmissive = anyMat.emissive instanceof Color ? anyMat.emissive.clone() : null
+      const baseEmissiveIntensity = typeof anyMat.emissiveIntensity === "number" ? anyMat.emissiveIntensity : null
+      entries.push({ material: entry, baseColor, baseEmissive, baseEmissiveIntensity })
+    }
+  })
+  return entries
+}
+
+const applyFlash = (entries: FlashMaterialEntry[], t: number, boost: number) => {
+  const amount = Math.max(0, Math.min(1, t))
+  for (const entry of entries) {
+    const anyMat = entry.material as unknown as {
+      color?: unknown
+      emissive?: unknown
+      emissiveIntensity?: unknown
+    }
+    if (entry.baseEmissive && anyMat.emissive instanceof Color) {
+      anyMat.emissive.copy(flashWhite)
+      if (entry.baseEmissiveIntensity !== null && typeof anyMat.emissiveIntensity === "number") {
+        anyMat.emissiveIntensity = entry.baseEmissiveIntensity + amount * boost
+      }
+      continue
+    }
+    if (entry.baseColor && anyMat.color instanceof Color) {
+      anyMat.color.copy(entry.baseColor).lerp(flashWhite, amount)
+    }
+  }
+}
+
+const resetFlash = (entries: FlashMaterialEntry[]) => {
+  for (const entry of entries) {
+    const anyMat = entry.material as unknown as {
+      color?: unknown
+      emissive?: unknown
+      emissiveIntensity?: unknown
+    }
+    if (entry.baseEmissive && anyMat.emissive instanceof Color) {
+      anyMat.emissive.copy(entry.baseEmissive)
+      if (entry.baseEmissiveIntensity !== null && typeof anyMat.emissiveIntensity === "number") {
+        anyMat.emissiveIntensity = entry.baseEmissiveIntensity
+      }
+      continue
+    }
+    if (entry.baseColor && anyMat.color instanceof Color) {
+      anyMat.color.copy(entry.baseColor)
+    }
+  }
+}
+
+const instantiateModel = (source: Group) => {
+  const root = source.clone(true) as Group
+  const ownedMaterials = new Set<Material>()
+  root.traverse((obj) => {
+    const maybe = obj as { material?: unknown }
+    const mat = maybe.material as Material | Material[] | undefined
+    if (!mat) return
+    if (Array.isArray(mat)) {
+      const cloned = mat.map((entry) => {
+        const next = entry.clone()
+        ownedMaterials.add(next)
+        return next
+      })
+      maybe.material = cloned
+      return
+    }
+    const cloned = mat.clone()
+    ownedMaterials.add(cloned)
+    maybe.material = cloned
+  })
+  return { root, ownedMaterials }
+}
 
 type Projectile = {
   mesh: Mesh
@@ -55,9 +158,8 @@ type Enemy = {
   orbitDistance: number
   attackCooldown: number
   flash: number
-  baseEmissive: Color
-  baseEmissiveIntensity: number
-  material: MeshStandardMaterial
+  flashMaterials: FlashMaterialEntry[]
+  ownedMaterials: Set<Material>
 }
 
 export type PrototypeHudState = {
@@ -167,7 +269,7 @@ export const createPrototypeScene = (
     color: 0x07143a,
     roughness: 0.92,
     metalness: 0.05,
-    map: assets.microTexture ?? undefined,
+    ...(assets.microTexture ? { map: assets.microTexture } : {}),
     emissive: new Color(0x031235),
     emissiveIntensity: 0.3,
   })
@@ -358,6 +460,9 @@ export const createPrototypeScene = (
   titan.position.set(0, surfaceY(0, 0) + playerRadius, 0)
   scene.add(titan)
 
+  const titanVisual = new Group()
+  titan.add(titanVisual)
+
   const titanSuitMat = new MeshPhysicalMaterial({
     color: 0xeaf8ff,
     roughness: 0.26,
@@ -385,43 +490,52 @@ export const createPrototypeScene = (
   const titanVisorGeo = new SphereGeometry(playerRadius * 0.21, 18, 12, 0.2, Math.PI * 0.6, 0.2, Math.PI * 0.6)
   const titanEyeGeo = new SphereGeometry(playerRadius * 0.06, 10, 10)
 
-  const torso = new Mesh(titanTorsoGeo, titanSuitMat)
-  torso.position.y = playerRadius * 0.26
-  titan.add(torso)
+  const playerOwnedMaterials = new Set<Material>()
+  const playerModel = assets.models.player
+  if (playerModel) {
+    const instance = instantiateModel(playerModel)
+    for (const mat of instance.ownedMaterials) playerOwnedMaterials.add(mat)
+    instance.root.position.y = -playerRadius
+    titanVisual.add(instance.root)
+  } else {
+    const torso = new Mesh(titanTorsoGeo, titanSuitMat)
+    torso.position.y = playerRadius * 0.26
+    titanVisual.add(torso)
 
-  const helmet = new Mesh(titanHelmetGeo, titanSuitMat)
-  helmet.position.y = playerRadius * 0.78
-  titan.add(helmet)
+    const helmet = new Mesh(titanHelmetGeo, titanSuitMat)
+    helmet.position.y = playerRadius * 0.78
+    titanVisual.add(helmet)
 
-  const visor = new Mesh(titanVisorGeo, titanVisorMat)
-  visor.position.set(0, playerRadius * 0.78, playerRadius * 0.42)
-  visor.rotation.y = Math.PI
-  titan.add(visor)
+    const visor = new Mesh(titanVisorGeo, titanVisorMat)
+    visor.position.set(0, playerRadius * 0.78, playerRadius * 0.42)
+    visor.rotation.y = Math.PI
+    titanVisual.add(visor)
 
-  const eyeL = new Mesh(titanEyeGeo, titanEyeMat)
-  eyeL.position.set(-playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
-  titan.add(eyeL)
+    const eyeL = new Mesh(titanEyeGeo, titanEyeMat)
+    eyeL.position.set(-playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
+    titanVisual.add(eyeL)
 
-  const eyeR = new Mesh(titanEyeGeo, titanEyeMat)
-  eyeR.position.set(playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
-  titan.add(eyeR)
+    const eyeR = new Mesh(titanEyeGeo, titanEyeMat)
+    eyeR.position.set(playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
+    titanVisual.add(eyeR)
 
-  const bootL = new Mesh(titanBootGeo, titanTrimMat)
-  bootL.position.set(-playerRadius * 0.24, playerRadius * 0.06, 0)
-  titan.add(bootL)
+    const bootL = new Mesh(titanBootGeo, titanTrimMat)
+    bootL.position.set(-playerRadius * 0.24, playerRadius * 0.06, 0)
+    titanVisual.add(bootL)
 
-  const bootR = new Mesh(titanBootGeo, titanTrimMat)
-  bootR.position.set(playerRadius * 0.24, playerRadius * 0.06, 0)
-  titan.add(bootR)
+    const bootR = new Mesh(titanBootGeo, titanTrimMat)
+    bootR.position.set(playerRadius * 0.24, playerRadius * 0.06, 0)
+    titanVisual.add(bootR)
 
-  const pack = new Mesh(titanPackGeo, titanTrimMat)
-  pack.position.set(0, playerRadius * 0.44, -playerRadius * 0.46)
-  titan.add(pack)
+    const pack = new Mesh(titanPackGeo, titanTrimMat)
+    pack.position.set(0, playerRadius * 0.44, -playerRadius * 0.46)
+    titanVisual.add(pack)
 
-  const gun = new Mesh(titanGunGeo, titanTrimMat)
-  gun.rotation.x = Math.PI / 2
-  gun.position.set(0, playerRadius * 0.42, playerRadius * 0.66)
-  titan.add(gun)
+    const gun = new Mesh(titanGunGeo, titanTrimMat)
+    gun.rotation.x = Math.PI / 2
+    gun.position.set(0, playerRadius * 0.42, playerRadius * 0.66)
+    titanVisual.add(gun)
+  }
 
   const aimRingGeo = new TorusGeometry(playerRadius * 0.22, playerRadius * 0.035, 10, 22)
   const aimRingMat = new MeshBasicMaterial({ color: 0xaef7ff, transparent: true, opacity: 0.75 })
@@ -431,21 +545,81 @@ export const createPrototypeScene = (
   titan.add(aimRing)
 
   const headingGeo = new TorusGeometry(playerRadius * 0.95, playerRadius * 0.045, 10, 48)
-  const headingMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.22 })
+  const headingMat = new MeshBasicMaterial({
+    color: 0x6fff00,
+    transparent: true,
+    opacity: 0.28,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  })
   const headingRing = new Mesh(headingGeo, headingMat)
   headingRing.rotation.x = Math.PI / 2
-  headingRing.position.y = -playerRadius * 0.98
+  headingRing.position.y = -playerRadius * 0.98 + 0.028
   titan.add(headingRing)
 
-  const headingArrowGeo = new ConeGeometry(playerRadius * 0.14, playerRadius * 0.52, 10, 1)
-  const headingArrowMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.7 })
+  const compassHaloGeo = new TorusGeometry(playerRadius * 1.12, playerRadius * 0.02, 10, 64)
+  const compassHaloMat = new MeshBasicMaterial({
+    color: 0xaef7ff,
+    transparent: true,
+    opacity: 0.12,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  })
+  const compassHalo = new Mesh(compassHaloGeo, compassHaloMat)
+  compassHalo.rotation.x = Math.PI / 2
+  compassHalo.position.y = -playerRadius * 0.98 + 0.03
+  titan.add(compassHalo)
+
+  const compassPlateGeo = new CircleGeometry(playerRadius * 1.22, 64)
+  const compassPlateMat = new MeshBasicMaterial({
+    color: 0x01020c,
+    transparent: true,
+    opacity: 0.2,
+    side: DoubleSide,
+    depthWrite: false,
+  })
+  const compassPlate = new Mesh(compassPlateGeo, compassPlateMat)
+  compassPlate.rotation.x = -Math.PI / 2
+  compassPlate.position.y = -playerRadius * 0.98 + 0.016
+  titan.add(compassPlate)
+
+  const headingTickGeo = new BoxGeometry(playerRadius * 0.075, playerRadius * 0.012, playerRadius * 0.52)
+  const headingTickMat = new MeshBasicMaterial({
+    color: 0x6fff00,
+    transparent: true,
+    opacity: 0.68,
+    blending: AdditiveBlending,
+    depthWrite: false,
+  })
+  const headingTick = new Mesh(headingTickGeo, headingTickMat)
+  headingTick.position.set(0, -playerRadius * 0.98 + 0.03, -playerRadius * 1.02)
+  titan.add(headingTick)
+
+  const arrowShape = new Shape()
+  arrowShape.moveTo(0, 0.62)
+  arrowShape.lineTo(0.34, 0.06)
+  arrowShape.lineTo(0.13, 0.06)
+  arrowShape.lineTo(0.13, -0.62)
+  arrowShape.lineTo(-0.13, -0.62)
+  arrowShape.lineTo(-0.13, 0.06)
+  arrowShape.lineTo(-0.34, 0.06)
+  arrowShape.closePath()
+  const headingArrowGeo = new ShapeGeometry(arrowShape)
+  const headingArrowMat = new MeshBasicMaterial({
+    color: 0x6fff00,
+    transparent: true,
+    opacity: 0.86,
+    blending: AdditiveBlending,
+    depthWrite: false,
+    side: DoubleSide,
+  })
   const headingArrow = new Mesh(headingArrowGeo, headingArrowMat)
   headingArrow.rotation.x = -Math.PI / 2
-  headingArrow.position.set(0, -playerRadius * 0.98, -playerRadius * 0.82)
+  headingArrow.position.set(0, -playerRadius * 0.98 + 0.03, -playerRadius * 0.84)
+  headingArrow.scale.setScalar(playerRadius * 0.88)
   titan.add(headingArrow)
 
-  const titanBaseEmissive = titanSuitMat.emissive.clone()
-  const titanBaseEmissiveIntensity = titanSuitMat.emissiveIntensity
+  const playerFlashMaterials = collectFlashMaterials(titanVisual)
 
   let playerHealth = config.player.maxHealth
   let playerInvuln = 0
@@ -533,60 +707,77 @@ export const createPrototypeScene = (
   const enemies: Enemy[] = []
 
   const spawnEnemy = (archetype: EnemyArchetype, i: number) => {
-    const material = (archetype === "chaser" ? chaserMatTemplate : skirterMatTemplate).clone()
     const mesh = new Group()
     const radius = archetype === "chaser" ? 0.82 : 0.74
     const maxHp = archetype === "chaser" ? 6 : 4
+    const ownedMaterials = new Set<Material>()
+    const modelId = archetype === "chaser" ? "enemy-chaser" : "enemy-skirter"
+    const modelSource = assets.models[modelId]
 
-    const body = new Mesh(enemyBodyGeo, material)
-    body.scale.setScalar(archetype === "chaser" ? 1.05 : 0.98)
-    mesh.add(body)
-
-    const belly = new Mesh(enemyBellyGeo, material)
-    belly.position.set(0, -0.18, 0.18)
-    belly.scale.setScalar(archetype === "chaser" ? 1.05 : 0.96)
-    mesh.add(belly)
-
-    const face = new Mesh(enemyFaceGeo, material)
-    face.position.set(0, 0.1, 0.52)
-    face.scale.set(1.1, 0.95, 0.9)
-    mesh.add(face)
-
-    const eyeL = new Mesh(enemyEyeGeo, enemyEyeMat)
-    eyeL.position.set(-0.14, 0.17, 0.7)
-    mesh.add(eyeL)
-
-    const eyeR = new Mesh(enemyEyeGeo, enemyEyeMat)
-    eyeR.position.set(0.14, 0.17, 0.7)
-    mesh.add(eyeR)
-
-    if (archetype === "chaser") {
-      const earL = new Mesh(enemyEarGeo, material)
-      earL.position.set(-0.34, 0.55, 0.1)
-      earL.rotation.set(-0.6, 0.2, 0.25)
-      mesh.add(earL)
-
-      const earR = new Mesh(enemyEarGeo, material)
-      earR.position.set(0.34, 0.55, 0.1)
-      earR.rotation.set(-0.6, -0.2, -0.25)
-      mesh.add(earR)
+    if (modelSource) {
+      const instance = instantiateModel(modelSource)
+      for (const mat of instance.ownedMaterials) ownedMaterials.add(mat)
+      instance.root.position.y = -radius
+      mesh.add(instance.root)
     } else {
-      const finL = new Mesh(enemyFinGeo, material)
-      finL.position.set(-0.5, 0.22, -0.05)
-      finL.rotation.set(Math.PI / 2, 0.25, Math.PI / 3)
-      finL.scale.set(0.9, 1.05, 0.9)
-      mesh.add(finL)
+      const material = (archetype === "chaser" ? chaserMatTemplate : skirterMatTemplate).clone()
+      ownedMaterials.add(material)
 
-      const finR = new Mesh(enemyFinGeo, material)
-      finR.position.set(0.5, 0.22, -0.05)
-      finR.rotation.set(Math.PI / 2, -0.25, -Math.PI / 3)
-      finR.scale.set(0.9, 1.05, 0.9)
-      mesh.add(finR)
+      const eyeMat = enemyEyeMat.clone()
+      ownedMaterials.add(eyeMat)
 
-      const spark = new Mesh(enemyEyeGeo, enemySparkMat)
-      spark.position.set(0, 0.62, -0.2)
-      spark.scale.setScalar(1.45)
-      mesh.add(spark)
+      const body = new Mesh(enemyBodyGeo, material)
+      body.scale.setScalar(archetype === "chaser" ? 1.05 : 0.98)
+      mesh.add(body)
+
+      const belly = new Mesh(enemyBellyGeo, material)
+      belly.position.set(0, -0.18, 0.18)
+      belly.scale.setScalar(archetype === "chaser" ? 1.05 : 0.96)
+      mesh.add(belly)
+
+      const face = new Mesh(enemyFaceGeo, material)
+      face.position.set(0, 0.1, 0.52)
+      face.scale.set(1.1, 0.95, 0.9)
+      mesh.add(face)
+
+      const eyeL = new Mesh(enemyEyeGeo, eyeMat)
+      eyeL.position.set(-0.14, 0.17, 0.7)
+      mesh.add(eyeL)
+
+      const eyeR = new Mesh(enemyEyeGeo, eyeMat)
+      eyeR.position.set(0.14, 0.17, 0.7)
+      mesh.add(eyeR)
+
+      if (archetype === "chaser") {
+        const earL = new Mesh(enemyEarGeo, material)
+        earL.position.set(-0.34, 0.55, 0.1)
+        earL.rotation.set(-0.6, 0.2, 0.25)
+        mesh.add(earL)
+
+        const earR = new Mesh(enemyEarGeo, material)
+        earR.position.set(0.34, 0.55, 0.1)
+        earR.rotation.set(-0.6, -0.2, -0.25)
+        mesh.add(earR)
+      } else {
+        const finL = new Mesh(enemyFinGeo, material)
+        finL.position.set(-0.5, 0.22, -0.05)
+        finL.rotation.set(Math.PI / 2, 0.25, Math.PI / 3)
+        finL.scale.set(0.9, 1.05, 0.9)
+        mesh.add(finL)
+
+        const finR = new Mesh(enemyFinGeo, material)
+        finR.position.set(0.5, 0.22, -0.05)
+        finR.rotation.set(Math.PI / 2, -0.25, -Math.PI / 3)
+        finR.scale.set(0.9, 1.05, 0.9)
+        mesh.add(finR)
+
+        const sparkMat = enemySparkMat.clone()
+        ownedMaterials.add(sparkMat)
+        const spark = new Mesh(enemyEyeGeo, sparkMat)
+        spark.position.set(0, 0.62, -0.2)
+        spark.scale.setScalar(1.45)
+        mesh.add(spark)
+      }
     }
 
     const angle = seeded(i + 101, 3) * Math.PI * 2
@@ -596,6 +787,7 @@ export const createPrototypeScene = (
     mesh.position.set(x, surfaceY(x, z) + radius, z)
     arena.add(mesh)
 
+    const flashMaterials = collectFlashMaterials(mesh)
     enemies.push({
       archetype,
       mesh,
@@ -603,14 +795,13 @@ export const createPrototypeScene = (
       velocity: new Vector3(),
       hp: maxHp,
       maxHp,
-      maxSpeed: archetype === "chaser" ? 2.95 : 3.35,
-      accel: archetype === "chaser" ? 9.5 : 10.5,
+      maxSpeed: config.enemies.maxSpeed * (archetype === "chaser" ? 0.95 : 1.05),
+      accel: config.enemies.accel * (archetype === "chaser" ? 0.9 : 1),
       orbitDistance: archetype === "chaser" ? 0 : 3.8,
       attackCooldown: 0,
       flash: 0,
-      baseEmissive: material.emissive.clone(),
-      baseEmissiveIntensity: material.emissiveIntensity,
-      material,
+      flashMaterials,
+      ownedMaterials,
     })
   }
 
@@ -734,7 +925,7 @@ export const createPrototypeScene = (
     const { dx, dy } = input.consumeLookDelta()
     if (dx !== 0 || dy !== 0) {
       const sensitivity = rm ? 0.002 : 0.0016
-      yaw -= dx * sensitivity
+      yaw += dx * sensitivity
       pitch -= dy * sensitivity
       pitch = Math.max(-0.75, Math.min(0.85, pitch))
     }
@@ -747,7 +938,7 @@ export const createPrototypeScene = (
     desiredMoveDir.set(0, 0, 0)
     if (moveMag > 0) {
       forward.set(-Math.sin(yaw), 0, -Math.cos(yaw))
-      right.set(forward.z, 0, -forward.x)
+      right.set(-forward.z, 0, forward.x)
       desiredMoveDir
         .addScaledVector(right, moveX / moveMag)
         .addScaledVector(forward, moveY / moveMag)
@@ -788,13 +979,19 @@ export const createPrototypeScene = (
       moveMag > 0.05 ? Math.atan2(desiredMoveDir.x, desiredMoveDir.z) : Math.atan2(lookForwardX, lookForwardZ)
     titan.rotation.y = dampAngle(titan.rotation.y, targetRot, rm ? 180 : 18, dt)
     titan.rotation.x = rm ? 0 : Math.sin(elapsed * 0.65) * 0.08
+    const headingPulse = rm ? 1 : 0.78 + 0.22 * Math.sin(elapsed * 2.1)
+    headingMat.opacity = 0.22 + headingPulse * 0.18
+    compassHaloMat.opacity = 0.06 + headingPulse * 0.1
+    compassPlateMat.opacity = 0.14 + headingPulse * 0.08
+    headingTickMat.opacity = 0.5 + headingPulse * 0.35
+    headingArrowMat.opacity = 0.68 + headingPulse * 0.32
+    const arrowScale = playerRadius * 0.88 * (rm ? 1 : 1 + 0.04 * Math.sin(elapsed * 2.1))
+    headingArrow.scale.setScalar(arrowScale)
     if (playerFlash > 0) {
       const t = Math.min(1, playerFlash / 0.18)
-      titanSuitMat.emissive.set(0xffffff)
-      titanSuitMat.emissiveIntensity = titanBaseEmissiveIntensity + t * 2.15
+      applyFlash(playerFlashMaterials, t, 2.15)
     } else {
-      titanSuitMat.emissive.copy(titanBaseEmissive)
-      titanSuitMat.emissiveIntensity = titanBaseEmissiveIntensity
+      resetFlash(playerFlashMaterials)
     }
 
     if (!rm) {
@@ -957,11 +1154,9 @@ export const createPrototypeScene = (
       if (target.flash > 0) {
         target.flash = Math.max(0, target.flash - dt)
         const t = Math.min(1, target.flash / 0.16)
-        target.material.emissive.set(0xffffff)
-        target.material.emissiveIntensity = target.baseEmissiveIntensity + t * 2.2
+        applyFlash(target.flashMaterials, t, 2.2)
       } else {
-        target.material.emissive.copy(target.baseEmissive)
-        target.material.emissiveIntensity = target.baseEmissiveIntensity
+        resetFlash(target.flashMaterials)
       }
     }
   }
@@ -978,9 +1173,11 @@ export const createPrototypeScene = (
     reducedMotionTracker.dispose()
     for (const projectile of projectiles) projectile.mesh.removeFromParent()
     projectiles.length = 0
+    titan.removeFromParent()
+    for (const mat of playerOwnedMaterials) mat.dispose()
     for (const target of enemies) {
       target.mesh.removeFromParent()
-      target.material.dispose()
+      for (const mat of target.ownedMaterials) mat.dispose()
     }
     enemies.length = 0
 
@@ -1007,6 +1204,9 @@ export const createPrototypeScene = (
     titanEyeGeo.dispose()
     aimRingGeo.dispose()
     headingGeo.dispose()
+    compassHaloGeo.dispose()
+    compassPlateGeo.dispose()
+    headingTickGeo.dispose()
     headingArrowGeo.dispose()
     sliceMat.dispose()
     atmosphereMat.dispose()
@@ -1024,6 +1224,9 @@ export const createPrototypeScene = (
     titanEyeMat.dispose()
     aimRingMat.dispose()
     headingMat.dispose()
+    compassHaloMat.dispose()
+    compassPlateMat.dispose()
+    headingTickMat.dispose()
     headingArrowMat.dispose()
     projectileMat.dispose()
     projectileCoreMat.dispose()

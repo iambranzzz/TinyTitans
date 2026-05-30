@@ -1,6 +1,6 @@
 import { Clock, SRGBColorSpace, Vector3, WebGLRenderer } from "three"
 import { resolvePrototypeConfig, type PrototypeConfig } from "./config"
-import { loadPrototypeAssets } from "./loader"
+import { disposePrototypeModels, loadPrototypeAssets } from "./loader"
 import { createPrototypeScene, type PrototypeHudState } from "./scene"
 
 export type PrototypeRuntime = {
@@ -63,6 +63,7 @@ export const startPrototypeEngine = async (
     hudListeners.clear()
     bundle?.dispose()
     assets?.microTexture?.dispose()
+    if (assets) disposePrototypeModels(assets.models)
     renderer?.renderLists?.dispose?.()
     renderer?.dispose()
     try {

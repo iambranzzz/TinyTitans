@@ -92,11 +92,13 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
+        style={{ opacity: hud.pointerLocked ? 1 : 0.62 }}
       >
-        <div className="relative h-10 w-10">
-          <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon shadow-[0_0_0_4px_rgba(111,255,0,0.08),0_0_24px_rgba(111,255,0,0.35)]" />
-          <div className="absolute left-1/2 top-1/2 h-px w-10 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-transparent via-cream/55 to-transparent opacity-80" />
-          <div className="absolute left-1/2 top-1/2 h-10 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-transparent via-cream/55 to-transparent opacity-80" />
+        <div className="relative h-11 w-11">
+          <div className="absolute inset-0 rounded-full border border-neon/28 shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_0_22px_rgba(111,255,0,0.18)]" />
+          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon shadow-[0_0_0_5px_rgba(111,255,0,0.08),0_0_28px_rgba(111,255,0,0.34)]" />
+          <div className="absolute left-1/2 top-1/2 h-[2px] w-11 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-transparent via-cream/70 to-transparent opacity-90 shadow-[0_0_14px_rgba(174,247,255,0.16)]" />
+          <div className="absolute left-1/2 top-1/2 h-11 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-transparent via-cream/70 to-transparent opacity-90 shadow-[0_0_14px_rgba(174,247,255,0.16)]" />
         </div>
       </div>
 

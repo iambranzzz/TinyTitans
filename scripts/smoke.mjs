@@ -109,6 +109,15 @@ const run = async () => {
     const runtime = await gameModule.startPrototypeEngine({})
     assert(runtime && typeof runtime.dispose === "function", "Prototype runtime missing dispose")
     runtime.dispose()
+
+    const configModule = await server.ssrLoadModule("/src/game/config.ts")
+    const sceneModule = await server.ssrLoadModule("/src/game/scene.ts")
+    const config = configModule.resolvePrototypeConfig()
+    const assets = { microTexture: null, models: { player: null, "enemy-chaser": null, "enemy-skirter": null } }
+    const canvas = { tabIndex: 0, style: { touchAction: "" } }
+    const bundle = sceneModule.createPrototypeScene(assets, config, { canvas })
+    assert(bundle && typeof bundle.dispose === "function", "Prototype scene bundle missing dispose")
+    bundle.dispose()
   } finally {
     await server.close()
     if (prevOpenAi === undefined) delete process.env.OPENAI_API_KEY

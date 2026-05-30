@@ -16,6 +16,29 @@ export type PrototypeInput = {
 const clampAxis = (v: number) => Math.max(-1, Math.min(1, v))
 
 export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    const getState = (): PrototypeInputState => ({
+      moveX: 0,
+      moveY: 0,
+      lookDX: 0,
+      lookDY: 0,
+      pointerLocked: false,
+      dragging: false,
+    })
+    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), dispose: () => {} }
+  }
+  if (!canvas || typeof (canvas as unknown as { addEventListener?: unknown }).addEventListener !== "function") {
+    const getState = (): PrototypeInputState => ({
+      moveX: 0,
+      moveY: 0,
+      lookDX: 0,
+      lookDY: 0,
+      pointerLocked: false,
+      dragging: false,
+    })
+    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), dispose: () => {} }
+  }
+
   const keys = new Set<string>()
   let dragging = false
   let pointerLocked = false

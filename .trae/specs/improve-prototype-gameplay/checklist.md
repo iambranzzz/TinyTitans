@@ -1,0 +1,7 @@
+- [x] Prototype loads `public/models/player.glb` when present; falls back when missing.
+- [x] Prototype loads enemy GLBs when present; falls back when missing.
+- [x] Controls are not inverted: mouse-right turns camera right; W moves forward relative to camera.
+- [x] Enemies are noticeably easier (slower, less damage, less frequent attacks, fewer spawn).
+- [x] Player direction is clearly readable (facing cue and/or ground compass).
+- [x] Crosshair is visible and does not interfere with HUD.
+- [x] `npm run build` and `npm run smoke` succeed.

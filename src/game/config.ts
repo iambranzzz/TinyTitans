@@ -32,6 +32,8 @@ export type PrototypeConfig = {
     attackRange: number
     attackCooldown: number
     damage: number
+    maxSpeed: number
+    accel: number
   }
 }
 
@@ -46,12 +48,12 @@ export const defaultPrototypeConfig: PrototypeConfig = {
   respawnDelay: 1.6,
   player: {
     radius: 1.05,
-    maxHealth: 100,
+    maxHealth: 120,
     maxSpeed: 8.4,
     accel: 26,
     friction: 16,
-    invulnAfterHit: 0.2,
-    knockback: 4.2,
+    invulnAfterHit: 0.35,
+    knockback: 3.9,
   },
   camera: {
     distance: 9.25,
@@ -62,13 +64,15 @@ export const defaultPrototypeConfig: PrototypeConfig = {
     sensitivity: 0.0033,
   },
   enemies: {
-    count: 6,
-    spawnRadius: 15,
-    detectRange: 18,
-    separation: 1.25,
-    attackRange: 1.25,
-    attackCooldown: 1.25,
-    damage: 7,
+    count: 4,
+    spawnRadius: 18,
+    detectRange: 14,
+    separation: 1.3,
+    attackRange: 1.15,
+    attackCooldown: 1.8,
+    damage: 4,
+    maxSpeed: 2.55,
+    accel: 7.8,
   },
 }
 
