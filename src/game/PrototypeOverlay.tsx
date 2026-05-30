@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll"
 import { startPrototypeEngine, type PrototypeRuntime } from "./engine"
@@ -8,8 +8,13 @@ type Props = {
   onClose: () => void
 }
 
+const emptyHud = { health: 0, maxHealth: 1, dead: true, pointerLocked: false }
+
 export default function PrototypeOverlay({ open, onClose }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null)
+  const runtimeRef = useRef<PrototypeRuntime | null>(null)
+  const closingRef = useRef(false)
+  const [hud, setHud] = useState(emptyHud)
 
   const container = useMemo(() => {
     if (typeof document === "undefined") return null
@@ -19,31 +24,57 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
   useLockBodyScroll(open)
 
   useEffect(() => {
+    if (open) closingRef.current = false
+  }, [open])
+
+  const closeNow = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    runtimeRef.current?.dispose()
+    runtimeRef.current = null
+    if (typeof document !== "undefined" && document.pointerLockElement) {
+      try {
+        document.exitPointerLock()
+      } catch {}
+    }
+    onClose()
+  }, [onClose])
+
+  useEffect(() => {
     if (!open) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
+      if (e.key === "Escape") closeNow()
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [open, onClose])
+  }, [open, closeNow])
 
   useEffect(() => {
     if (!open) return
     if (!hostRef.current) return
 
+    setHud(emptyHud)
     let alive = true
     let runtime: PrototypeRuntime | null = null
+    let unsub: (() => void) | null = null
 
-    startPrototypeEngine(hostRef.current).then((r) => {
-      if (!alive) {
-        r.dispose()
-        return
-      }
-      runtime = r
-    })
+    startPrototypeEngine(hostRef.current)
+      .then((r) => {
+        if (!alive) {
+          r.dispose()
+          return
+        }
+        runtimeRef.current = r
+        runtime = r
+        setHud(r.getHudState())
+        unsub = r.subscribeHud(setHud)
+      })
+      .catch(() => {})
 
     return () => {
       alive = false
+      if (runtimeRef.current === runtime) runtimeRef.current = null
+      unsub?.()
       runtime?.dispose()
     }
   }, [open])
@@ -58,24 +89,62 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
 
       <div ref={hostRef} className="absolute inset-0" />
 
-      <div className="absolute inset-x-0 top-0 z-10 border-b border-white/10 bg-black/30 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-4 sm:px-8">
-          <div className="min-w-0">
-            <div className="font-grotesk text-[12px] uppercase tracking-[0.18em] text-cream/55">
-              Prototype
+      <div className="pointer-events-none absolute inset-0 z-10">
+        <div className="pointer-events-auto absolute left-4 top-4 w-[248px] rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-xl sm:left-6 sm:top-6">
+          <div className="flex items-baseline justify-between gap-4">
+            <div className="font-grotesk text-[11px] uppercase tracking-[0.18em] text-cream/70">
+              Health
             </div>
-            <div className="mt-1 truncate font-grotesk text-lg uppercase tracking-[0.08em] text-cream">
-              Tiny Titan Arena
+            <div className="font-mono text-[11px] text-cream/65">
+              {Math.max(0, Math.round((hud.health / Math.max(1, hud.maxHealth)) * 100))}%
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="liquid-glass glass-float inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-grotesk text-[12px] uppercase tracking-[0.16em] text-cream/80 hover:text-neon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon/60"
-          >
-            <span className="text-base leading-none">×</span>
-            <span>Exit</span>
-          </button>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(90deg,rgba(111,255,0,0.95),rgba(128,246,255,0.9),rgba(255,69,195,0.9))] transition-[width,filter,opacity] duration-200"
+              style={{
+                width: `${Math.max(0, Math.min(1, hud.health / Math.max(1, hud.maxHealth))) * 100}%`,
+                opacity: hud.dead ? 0.45 : 1,
+                filter: hud.dead ? "saturate(0.65)" : "none",
+              }}
+            />
+          </div>
+          <div className="mt-2 font-mono text-[11px] text-cream/55">
+            {hud.dead ? "Respawning…" : hud.pointerLocked ? "Mouse captured" : "Click to capture mouse"}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={closeNow}
+          className="liquid-glass glass-float pointer-events-auto absolute right-4 top-4 inline-flex items-center gap-2 rounded-full px-5 py-2.5 font-grotesk text-[12px] uppercase tracking-[0.16em] text-cream/80 hover:text-neon focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon/60 sm:right-6 sm:top-6"
+        >
+          <span className="text-base leading-none">×</span>
+          <span>Exit</span>
+        </button>
+
+        <div className="pointer-events-auto absolute bottom-4 left-4 max-w-[320px] rounded-2xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-[12px] leading-relaxed text-cream/70 backdrop-blur-xl sm:bottom-6 sm:left-6">
+          <div className="font-grotesk text-[11px] uppercase tracking-[0.18em] text-cream/70">
+            Controls
+          </div>
+          <div className="mt-2 grid gap-1">
+            <div className="flex gap-3">
+              <span className="w-20 shrink-0 text-cream/50">Move</span>
+              <span>WASD / Arrows</span>
+            </div>
+            <div className="flex gap-3">
+              <span className="w-20 shrink-0 text-cream/50">Look</span>
+              <span>Mouse</span>
+            </div>
+            <div className="flex gap-3">
+              <span className="w-20 shrink-0 text-cream/50">Shoot</span>
+              <span>Left click</span>
+            </div>
+            <div className="flex gap-3">
+              <span className="w-20 shrink-0 text-cream/50">Exit</span>
+              <span>Esc</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 export type PrototypeConfig = {
   clearColor: number
   dprCap: number
+  particleCap: number
   fov: number
   cameraPosition: { x: number; y: number; z: number }
   arenaRadius: number
@@ -36,7 +37,8 @@ export type PrototypeConfig = {
 
 export const defaultPrototypeConfig: PrototypeConfig = {
   clearColor: 0x010828,
-  dprCap: 2,
+  dprCap: 1.75,
+  particleCap: 120,
   fov: 56,
   cameraPosition: { x: 0, y: 1.9, z: 7.4 },
   arenaRadius: 26,

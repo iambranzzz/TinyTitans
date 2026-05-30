@@ -104,6 +104,11 @@ const run = async () => {
     assert(payload.mode === "fallback", "Guide endpoint expected fallback mode when OpenAI is unavailable")
     assert(Array.isArray(payload.sources) && payload.sources.length > 0, "Guide endpoint returned empty sources")
     assert(typeof payload.answer === "string" && payload.answer.length > 0, "Guide endpoint returned empty answer")
+
+    const gameModule = await server.ssrLoadModule("/src/game/index.ts")
+    const runtime = await gameModule.startPrototypeEngine({})
+    assert(runtime && typeof runtime.dispose === "function", "Prototype runtime missing dispose")
+    runtime.dispose()
   } finally {
     await server.close()
     if (prevOpenAi === undefined) delete process.env.OPENAI_API_KEY

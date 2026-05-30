@@ -58,11 +58,19 @@ type Enemy = {
   material: MeshStandardMaterial
 }
 
+export type PrototypeHudState = {
+  health: number
+  maxHealth: number
+  dead: boolean
+  pointerLocked: boolean
+}
+
 export type PrototypeSceneBundle = {
   scene: Scene
   camera: PerspectiveCamera
   shoot: (direction: Vector3) => void
   update: (dt: number, elapsed: number) => void
+  getHudState: () => PrototypeHudState
   dispose: () => void
 }
 
@@ -183,7 +191,6 @@ export const createPrototypeScene = (
 
   const reducedMotionTracker = createReducedMotionTracker()
   const getReducedMotion = () => config.reducedMotion || reducedMotionTracker.get()
-  const reducedMotion = getReducedMotion()
 
   const input = createPrototypeInput(options.canvas)
 
@@ -302,7 +309,7 @@ export const createPrototypeScene = (
   let particleBase: Float32Array | null = null
   let particlePhase: Float32Array | null = null
   let particleSpeed: Float32Array | null = null
-  const particleCount = reducedMotion ? 0 : 140
+  const particleCount = Math.max(0, Math.min(140, config.particleCap))
 
   if (particleCount > 0) {
     const particleGeo = new BufferGeometry()
@@ -340,6 +347,7 @@ export const createPrototypeScene = (
     })
     particles = new Points(particleGeo, particleMat)
     particles.position.y = 0.3
+    particles.visible = !getReducedMotion()
     scene.add(particles)
   }
 
@@ -551,7 +559,7 @@ export const createPrototypeScene = (
     playerInvuln = config.player.invulnAfterHit
     playerFlash = 0.18
     damageFlash = 1
-    if (!reducedMotionTracker.get()) cameraShake = Math.min(1, cameraShake + 1)
+    if (!getReducedMotion()) cameraShake = Math.min(1, cameraShake + 1)
     scratchDelta.subVectors(titan.position, sourcePos)
     scratchDelta.y = 0
     if (scratchDelta.lengthSq() > 1e-6) {
@@ -572,7 +580,8 @@ export const createPrototypeScene = (
   }
 
   const update = (dt: number, elapsed: number) => {
-    const rm = reducedMotionTracker.get()
+    const rm = getReducedMotion()
+    if (rm) cameraShake = 0
     if (dead) {
       respawnTimer = Math.max(0, respawnTimer - dt)
       if (respawnTimer === 0) resetRun()
@@ -682,7 +691,8 @@ export const createPrototypeScene = (
     damagePlane.scale.set(planeW * 2.2, planeH * 2.2, 1)
     damagePlaneMat.opacity = Math.min(0.68, Math.pow(damageFlash, 1.35) * 0.6 + (dead ? 0.38 : 0))
 
-    if (particles && particleBase && particlePhase && particleSpeed) {
+    if (particles) particles.visible = !rm
+    if (!rm && particles && particleBase && particlePhase && particleSpeed) {
       const attr = (particles.geometry as BufferGeometry).getAttribute("position") as Float32BufferAttribute
       for (let i = 0; i < particleCount; i += 1) {
         const idx = i * 3
@@ -816,6 +826,13 @@ export const createPrototypeScene = (
     }
   }
 
+  const getHudState = (): PrototypeHudState => ({
+    health: playerHealth,
+    maxHealth: config.player.maxHealth,
+    dead,
+    pointerLocked: input.getState().pointerLocked,
+  })
+
   const dispose = () => {
     input.dispose()
     reducedMotionTracker.dispose()
@@ -853,5 +870,5 @@ export const createPrototypeScene = (
     skirterMatTemplate.dispose()
   }
 
-  return { scene, camera, shoot, update, dispose }
+  return { scene, camera, shoot, update, getHudState, dispose }
 }
