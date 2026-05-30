@@ -1,4 +1,4 @@
-import { Clock, SRGBColorSpace, WebGLRenderer } from "three"
+import { Clock, SRGBColorSpace, Vector3, WebGLRenderer } from "three"
 import { resolvePrototypeConfig, type PrototypeConfig } from "./config"
 import { loadPrototypeAssets } from "./loader"
 import { createPrototypeScene } from "./scene"
@@ -13,8 +13,6 @@ export const startPrototypeEngine = async (
 ): Promise<PrototypeRuntime> => {
   const config = resolvePrototypeConfig(partialConfig)
   const assets = await loadPrototypeAssets()
-  const bundle = createPrototypeScene(assets, config)
-
   const renderer = new WebGLRenderer({ antialias: true })
   renderer.outputColorSpace = SRGBColorSpace
   renderer.setClearColor(config.clearColor, 1)
@@ -23,9 +21,31 @@ export const startPrototypeEngine = async (
   renderer.domElement.style.display = "block"
   container.appendChild(renderer.domElement)
 
+  const bundle = createPrototypeScene(assets, config, { canvas: renderer.domElement })
   const clock = new Clock()
   let frame = 0
   let disposed = false
+
+  let fireHeld = false
+  let fireQueued = false
+  let nextShotAt = 0
+  const fireCooldown = 0.12
+  const scratchDir = new Vector3()
+
+  const onPointerDown = (e: PointerEvent) => {
+    if (e.button !== 0) return
+    fireHeld = true
+    fireQueued = true
+  }
+
+  const onPointerUp = (e: PointerEvent) => {
+    if (e.button !== 0) return
+    fireHeld = false
+  }
+
+  const onContextMenu = (e: MouseEvent) => {
+    e.preventDefault()
+  }
 
   const resize = () => {
     if (disposed) return
@@ -42,10 +62,22 @@ export const startPrototypeEngine = async (
   observer.observe(container)
   resize()
 
+  renderer.domElement.addEventListener("pointerdown", onPointerDown)
+  window.addEventListener("pointerup", onPointerUp)
+  renderer.domElement.addEventListener("contextmenu", onContextMenu)
+
   const tick = () => {
     if (disposed) return
     const dt = clock.getDelta()
     const elapsed = clock.elapsedTime
+
+    if (fireQueued || (fireHeld && elapsed >= nextShotAt)) {
+      bundle.camera.getWorldDirection(scratchDir)
+      bundle.shoot(scratchDir)
+      nextShotAt = elapsed + fireCooldown
+      fireQueued = false
+    }
+
     bundle.update(dt, elapsed)
     renderer.render(bundle.scene, bundle.camera)
     frame = window.requestAnimationFrame(tick)
@@ -58,6 +90,9 @@ export const startPrototypeEngine = async (
     disposed = true
     observer.disconnect()
     window.cancelAnimationFrame(frame)
+    renderer.domElement.removeEventListener("pointerdown", onPointerDown)
+    window.removeEventListener("pointerup", onPointerUp)
+    renderer.domElement.removeEventListener("contextmenu", onContextMenu)
     bundle.dispose()
     assets.microTexture?.dispose()
     renderer.dispose()

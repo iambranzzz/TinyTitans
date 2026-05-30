@@ -4,23 +4,23 @@
   - [x] Create `src/game/` structure (engine loop, scene setup, asset loader, config).
   - [x] Add a “Play Prototype” launcher (button in a new section) and a full-screen overlay container.
 
-- [ ] Task 2: Implement third-person controller + camera.
-  - [ ] Implement input mapping (WASD, mouse orbit; pointer lock or click-drag fallback).
-  - [ ] Implement character kinematic movement (accel/friction, grounded plane, simple collider).
-  - [ ] Implement orbit camera that keeps character visible (Roblox-like feel).
+- [x] Task 2: Implement third-person controller + camera.
+  - [x] Implement input mapping (WASD, mouse orbit; pointer lock or click-drag fallback).
+  - [x] Implement character kinematic movement (accel/friction, grounded plane, simple collider).
+  - [x] Implement orbit camera that keeps character visible (Roblox-like feel).
 
-- [ ] Task 3: Build the arena environment.
-  - [ ] Create one stylized “planet slice” arena (ground, rocks/mushrooms/crystals as simple geometry).
-  - [ ] Add lighting + fog/atmosphere tuned for performance.
-  - [ ] Add optional lightweight particles (motion-safe).
+- [x] Task 3: Build the arena environment.
+  - [x] Create one stylized “planet slice” arena (ground, rocks/mushrooms/crystals as simple geometry).
+  - [x] Add lighting + fog/atmosphere tuned for performance.
+  - [x] Add optional lightweight particles (motion-safe).
 
-- [ ] Task 4: Implement Bubble Blaster combat.
-  - [ ] Implement projectile spawn, lifetime, and collision checks (sphere/box).
-  - [ ] Add hit feedback on enemy (flash/knockback-lite).
+- [x] Task 4: Implement Bubble Blaster combat.
+  - [x] Implement projectile spawn, lifetime, and collision checks (sphere/box).
+  - [x] Add hit feedback on enemy (flash/knockback-lite).
 
 - [ ] Task 5: Implement enemies and gameplay loop.
-  - [ ] Add 1–2 enemy types with basic steering and attack on proximity.
-  - [ ] Add player health, damage feedback, and respawn/reset.
+  - [x] Add 1–2 enemy types with basic steering and attack on proximity.
+  - [x] Add player health, damage feedback, and respawn/reset.
 
 - [ ] Task 6: Add HUD + exit behavior.
   - [ ] Add health bar + controls hint + exit button overlayed on the game.
