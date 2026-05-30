@@ -173,6 +173,7 @@ export type PrototypeSceneBundle = {
   scene: Scene
   camera: PerspectiveCamera
   shoot: (direction: Vector3) => void
+  setVirtualMove: (x: number, y: number) => void
   update: (dt: number, elapsed: number) => void
   getHudState: () => PrototypeHudState
   dispose: () => void
@@ -840,6 +841,10 @@ export const createPrototypeScene = (
     })
   }
 
+  const setVirtualMove = (x: number, y: number) => {
+    input.setVirtualMove(x, y)
+  }
+
   const clearProjectiles = () => {
     for (const projectile of projectiles) projectile.mesh.removeFromParent()
     projectiles.length = 0
@@ -1236,5 +1241,5 @@ export const createPrototypeScene = (
     enemySparkMat.dispose()
   }
 
-  return { scene, camera, shoot, update, getHudState, dispose }
+  return { scene, camera, shoot, setVirtualMove, update, getHudState, dispose }
 }

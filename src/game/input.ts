@@ -10,10 +10,12 @@ export type PrototypeInputState = {
 export type PrototypeInput = {
   getState: () => PrototypeInputState
   consumeLookDelta: () => { dx: number; dy: number }
+  setVirtualMove: (x: number, y: number) => void
   dispose: () => void
 }
 
 const clampAxis = (v: number) => Math.max(-1, Math.min(1, v))
+const gameKeys = new Set(["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"])
 
 export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput => {
   if (typeof window === "undefined" || typeof document === "undefined") {
@@ -25,7 +27,7 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
       pointerLocked: false,
       dragging: false,
     })
-    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), dispose: () => {} }
+    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), setVirtualMove: () => {}, dispose: () => {} }
   }
   if (!canvas || typeof (canvas as unknown as { addEventListener?: unknown }).addEventListener !== "function") {
     const getState = (): PrototypeInputState => ({
@@ -36,7 +38,7 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
       pointerLocked: false,
       dragging: false,
     })
-    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), dispose: () => {} }
+    return { getState, consumeLookDelta: () => ({ dx: 0, dy: 0 }), setVirtualMove: () => {}, dispose: () => {} }
   }
 
   const keys = new Set<string>()
@@ -46,13 +48,19 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
   let lookDY = 0
   let dragPrevX = 0
   let dragPrevY = 0
+  let virtualMoveX = 0
+  let virtualMoveY = 0
 
   const onKeyDown = (e: KeyboardEvent) => {
-    keys.add(e.key.toLowerCase())
+    const key = e.key.toLowerCase()
+    if (gameKeys.has(key)) e.preventDefault()
+    keys.add(key)
   }
 
   const onKeyUp = (e: KeyboardEvent) => {
-    keys.delete(e.key.toLowerCase())
+    const key = e.key.toLowerCase()
+    if (gameKeys.has(key)) e.preventDefault()
+    keys.delete(key)
   }
 
   const onPointerDown = (e: PointerEvent) => {
@@ -126,8 +134,8 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
     const s = keys.has("s") || keys.has("arrowdown") ? 1 : 0
     const a = keys.has("a") || keys.has("arrowleft") ? 1 : 0
     const d = keys.has("d") || keys.has("arrowright") ? 1 : 0
-    const x = clampAxis(d - a)
-    const y = clampAxis(w - s)
+    const x = clampAxis(d - a + virtualMoveX)
+    const y = clampAxis(w - s + virtualMoveY)
     return { x, y }
   }
 
@@ -142,6 +150,11 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
   const getState = (): PrototypeInputState => {
     const { x, y } = getMoveAxis()
     return { moveX: x, moveY: y, lookDX, lookDY, pointerLocked, dragging }
+  }
+
+  const setVirtualMove = (x: number, y: number) => {
+    virtualMoveX = clampAxis(x)
+    virtualMoveY = clampAxis(y)
   }
 
   const dispose = () => {
@@ -161,5 +174,5 @@ export const createPrototypeInput = (canvas: HTMLCanvasElement): PrototypeInput 
     }
   }
 
-  return { getState, consumeLookDelta, dispose }
+  return { getState, consumeLookDelta, setVirtualMove, dispose }
 }

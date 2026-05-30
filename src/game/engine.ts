@@ -6,6 +6,8 @@ import { createPrototypeScene, type PrototypeHudState } from "./scene"
 export type PrototypeRuntime = {
   dispose: () => void
   getHudState: () => PrototypeHudState
+  setFireHeld: (held: boolean) => void
+  setVirtualMove: (x: number, y: number) => void
   subscribeHud: (listener: (state: PrototypeHudState) => void) => () => void
 }
 
@@ -13,6 +15,8 @@ const emptyHudState: PrototypeHudState = { health: 0, maxHealth: 0, dead: true, 
 const emptyRuntime: PrototypeRuntime = {
   dispose: () => {},
   getHudState: () => emptyHudState,
+  setFireHeld: () => {},
+  setVirtualMove: () => {},
   subscribeHud: () => () => {},
 }
 
@@ -27,7 +31,14 @@ export const startPrototypeEngine = async (
     return emptyRuntime
   }
 
-  const config = resolvePrototypeConfig(partialConfig)
+  const baseConfig = resolvePrototypeConfig(partialConfig)
+  const coarsePointer =
+    typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches
+  const config = resolvePrototypeConfig({
+    ...baseConfig,
+    dprCap: coarsePointer ? Math.min(baseConfig.dprCap, 1.35) : baseConfig.dprCap,
+    particleCap: coarsePointer ? Math.min(baseConfig.particleCap, 72) : baseConfig.particleCap,
+  })
   let assets: Awaited<ReturnType<typeof loadPrototypeAssets>> | null = null
   let renderer: WebGLRenderer | null = null
   let bundle: ReturnType<typeof createPrototypeScene> | null = null
@@ -44,6 +55,12 @@ export const startPrototypeEngine = async (
 
   const getHudState = (): PrototypeHudState =>
     bundle?.getHudState() ?? emptyHudState
+
+  const setVirtualMove = (x: number, y: number) => {
+    bundle?.setVirtualMove(x, y)
+  }
+
+  let setFireHeld: PrototypeRuntime["setFireHeld"] = () => {}
 
   const subscribeHud = (listener: (state: PrototypeHudState) => void) => {
     hudListeners.add(listener)
@@ -103,15 +120,19 @@ export const startPrototypeEngine = async (
     const fireCooldown = 0.12
     const scratchDir = new Vector3()
 
+    setFireHeld = (held: boolean) => {
+      fireHeld = held
+      if (held) fireQueued = true
+    }
+
     onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return
-      fireHeld = true
-      fireQueued = true
+      setFireHeld(true)
     }
 
     onPointerUp = (e: PointerEvent) => {
       if (e.button !== 0) return
-      fireHeld = false
+      setFireHeld(false)
     }
 
     onContextMenu = (e: MouseEvent) => {
@@ -183,5 +204,5 @@ export const startPrototypeEngine = async (
     return emptyRuntime
   }
 
-  return { dispose, getHudState, subscribeHud }
+  return { dispose, getHudState, setFireHeld, setVirtualMove, subscribeHud }
 }

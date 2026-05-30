@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react"
+import { lazy, Suspense, type ReactNode, useMemo, useState } from "react"
 import ModalDrawer from "./components/ModalDrawer"
 import PlanetDetail from "./components/PlanetDetail"
 import PlanetExplorer from "./components/PlanetExplorer"
@@ -6,7 +6,6 @@ import SectionShell from "./components/SectionShell"
 import StickyNav, { type NavSection } from "./components/StickyNav"
 import TrailerHero from "./components/TrailerHero"
 import { loadBundledContent, type Creature, type Planet } from "./data"
-import PrototypeOverlay from "./game/PrototypeOverlay"
 import { scrollToSection } from "./lib/scroll"
 import CreaturesSection, { CreatureDetail } from "./sections/CreaturesSection"
 import CommunityVoteSection from "./sections/CommunityVoteSection"
@@ -14,6 +13,8 @@ import GalacticGuideSection from "./sections/GalacticGuideSection"
 import MountsSection, { MountDetail } from "./sections/MountsSection"
 import PrototypeSection from "./sections/PrototypeSection"
 import WeaponsSection from "./sections/WeaponsSection"
+
+const PrototypeOverlay = lazy(() => import("./game/PrototypeOverlay"))
 
 export default function App() {
   const sections = useMemo<NavSection[]>(
@@ -206,7 +207,11 @@ export default function App() {
         {detail.body}
       </ModalDrawer>
 
-      <PrototypeOverlay open={prototypeOpen} onClose={() => setPrototypeOpen(false)} />
+      {prototypeOpen ? (
+        <Suspense fallback={null}>
+          <PrototypeOverlay open={prototypeOpen} onClose={() => setPrototypeOpen(false)} />
+        </Suspense>
+      ) : null}
 
       <div
         aria-hidden="true"

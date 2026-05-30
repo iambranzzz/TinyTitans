@@ -7,6 +7,7 @@ type Props = {
 
 export default function TrailerHero({ onExploreUniverse }: Props) {
   const embedUrl = (import.meta.env as { VITE_PIXVERSE_EMBED_URL?: string }).VITE_PIXVERSE_EMBED_URL
+  const trailerSrc = embedUrl?.trim() || "/trailer.mp4"
   const [open, setOpen] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
@@ -102,7 +103,7 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
     title: string
     fullscreenRef: RefObject<HTMLDivElement>
   }) => {
-    const src = embedUrl?.trim()
+    const src = trailerSrc
     const isVideo = isDirectVideoUrl(src)
     return (
       <div className="liquid-glass relative overflow-hidden rounded-3xl">
@@ -163,16 +164,7 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
               )
-            ) : (
-              <div className="absolute inset-0 grid place-items-center px-6 text-center">
-                <div>
-                  <div className="text-sm font-semibold text-white/90">Trailer embed not configured</div>
-                  <div className="mt-2 text-sm leading-relaxed text-white/60">
-                    Set VITE_PIXVERSE_EMBED_URL to a PixVerse embed link to enable playback.
-                  </div>
-                </div>
-              </div>
-            )}
+            ) : null}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-bg/55 to-transparent" />
           </div>
         </div>
@@ -336,7 +328,7 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
                       <button
                         type="button"
                         onClick={async () => {
-                          const target = isDirectVideoUrl(embedUrl) ? modalVideoRef.current : modalFullscreenRef.current
+                          const target = isDirectVideoUrl(trailerSrc) ? modalVideoRef.current : modalFullscreenRef.current
                           if (!target) return
                           if (isFullscreen) {
                             if (typeof document === "undefined") return
@@ -372,12 +364,12 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
                         className="aspect-video w-full overflow-hidden rounded-3xl border border-cream/10 bg-black/45 shadow-[0_25px_100px_rgba(0,0,0,0.55)]"
                       >
                         <div className="h-full w-full">
-                          {embedUrl?.trim() ? (
-                            isDirectVideoUrl(embedUrl) ? (
+                          {trailerSrc ? (
+                            isDirectVideoUrl(trailerSrc) ? (
                               <video
                                 ref={modalVideoRef}
                                 className="h-full w-full"
-                                src={embedUrl.trim()}
+                                src={trailerSrc}
                                 controls
                                 playsInline
                                 autoPlay
@@ -387,7 +379,7 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
                               <iframe
                                 title="Tiny Titan trailer fullscreen"
                                 className="h-full w-full"
-                                src={embedUrl.trim()}
+                                src={trailerSrc}
                                 allow="autoplay; fullscreen; picture-in-picture"
                                 allowFullScreen
                                 referrerPolicy="strict-origin-when-cross-origin"
@@ -396,13 +388,7 @@ export default function TrailerHero({ onExploreUniverse }: Props) {
                           ) : (
                             <div className="grid h-full place-items-center px-6 text-center">
                               <div>
-                                <div className="text-sm font-semibold text-white/90">
-                                  Trailer embed not configured
-                                </div>
-                                <div className="mt-2 text-sm leading-relaxed text-white/60">
-                                  Set VITE_PIXVERSE_EMBED_URL to a PixVerse embed link to enable
-                                  playback.
-                                </div>
+                                <div className="text-sm font-semibold text-white/90">Trailer unavailable</div>
                               </div>
                             </div>
                           )}

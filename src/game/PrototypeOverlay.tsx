@@ -40,6 +40,14 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
     onClose()
   }, [onClose])
 
+  const setVirtualMove = useCallback((x: number, y: number) => {
+    runtimeRef.current?.setVirtualMove(x, y)
+  }, [])
+
+  const setTouchFire = useCallback((held: boolean) => {
+    runtimeRef.current?.setFireHeld(held)
+  }, [])
+
   useEffect(() => {
     if (!open) return
     const onKeyDown = (e: KeyboardEvent) => {
@@ -162,6 +170,60 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
               <span>Esc</span>
             </div>
           </div>
+        </div>
+
+        <div className="pointer-events-auto absolute bottom-4 right-4 grid touch-none select-none gap-3 sm:hidden">
+          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-black/30 p-2 backdrop-blur-xl">
+            <button
+              type="button"
+              aria-label="Move forward"
+              onPointerDown={() => setVirtualMove(0, 1)}
+              onPointerUp={() => setVirtualMove(0, 0)}
+              onPointerCancel={() => setVirtualMove(0, 0)}
+              className="col-start-2 grid h-12 w-12 place-items-center rounded-xl bg-white/10 font-grotesk text-lg text-cream/80"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              aria-label="Move left"
+              onPointerDown={() => setVirtualMove(-1, 0)}
+              onPointerUp={() => setVirtualMove(0, 0)}
+              onPointerCancel={() => setVirtualMove(0, 0)}
+              className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 font-grotesk text-lg text-cream/80"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              aria-label="Move backward"
+              onPointerDown={() => setVirtualMove(0, -1)}
+              onPointerUp={() => setVirtualMove(0, 0)}
+              onPointerCancel={() => setVirtualMove(0, 0)}
+              className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 font-grotesk text-lg text-cream/80"
+            >
+              ↓
+            </button>
+            <button
+              type="button"
+              aria-label="Move right"
+              onPointerDown={() => setVirtualMove(1, 0)}
+              onPointerUp={() => setVirtualMove(0, 0)}
+              onPointerCancel={() => setVirtualMove(0, 0)}
+              className="grid h-12 w-12 place-items-center rounded-xl bg-white/10 font-grotesk text-lg text-cream/80"
+            >
+              →
+            </button>
+          </div>
+          <button
+            type="button"
+            onPointerDown={() => setTouchFire(true)}
+            onPointerUp={() => setTouchFire(false)}
+            onPointerCancel={() => setTouchFire(false)}
+            className="h-14 rounded-full bg-neon px-6 font-grotesk text-[12px] uppercase tracking-[0.16em] text-ink-950 shadow-[0_18px_60px_rgba(111,255,0,0.22)]"
+          >
+            Fire
+          </button>
         </div>
       </div>
 
