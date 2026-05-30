@@ -89,6 +89,17 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
 
       <div ref={hostRef} className="absolute inset-0" />
 
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2"
+      >
+        <div className="relative h-10 w-10">
+          <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-neon shadow-[0_0_0_4px_rgba(111,255,0,0.08),0_0_24px_rgba(111,255,0,0.35)]" />
+          <div className="absolute left-1/2 top-1/2 h-px w-10 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-transparent via-cream/55 to-transparent opacity-80" />
+          <div className="absolute left-1/2 top-1/2 h-10 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-transparent via-cream/55 to-transparent opacity-80" />
+        </div>
+      </div>
+
       <div className="pointer-events-none absolute inset-0 z-10">
         <div className="pointer-events-auto absolute left-4 top-4 w-[248px] rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur-xl sm:left-6 sm:top-6">
           <div className="flex items-baseline justify-between gap-4">
@@ -130,7 +141,11 @@ export default function PrototypeOverlay({ open, onClose }: Props) {
           <div className="mt-2 grid gap-1">
             <div className="flex gap-3">
               <span className="w-20 shrink-0 text-cream/50">Move</span>
-              <span>WASD / Arrows</span>
+              <span>W forward · S back · A/D strafe</span>
+            </div>
+            <div className="flex gap-3">
+              <span className="w-20 shrink-0 text-cream/50">Tip</span>
+              <span>Follow the neon arrow ring for forward direction</span>
             </div>
             <div className="flex gap-3">
               <span className="w-20 shrink-0 text-cream/50">Look</span>

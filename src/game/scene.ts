@@ -2,6 +2,7 @@ import {
   AdditiveBlending,
   AmbientLight,
   BackSide,
+  BoxGeometry,
   BufferGeometry,
   Color,
   ConeGeometry,
@@ -26,6 +27,7 @@ import {
   PointsMaterial,
   Scene,
   SphereGeometry,
+  TorusGeometry,
   Vector3,
 } from "three"
 import type { PrototypeConfig } from "./config"
@@ -43,7 +45,7 @@ type EnemyArchetype = "chaser" | "skirter"
 
 type Enemy = {
   archetype: EnemyArchetype
-  mesh: Mesh
+  mesh: Object3D
   radius: number
   velocity: Vector3
   hp: number
@@ -352,22 +354,98 @@ export const createPrototypeScene = (
   }
 
   const playerRadius = config.player.radius
-  const titanGeo = new IcosahedronGeometry(playerRadius, 2)
-  const titanMat = new MeshPhysicalMaterial({
-    color: 0xdaf7ff,
-    roughness: 0.24,
-    metalness: 0.06,
-    clearcoat: 1,
-    clearcoatRoughness: 0.28,
-    emissive: new Color(0x083cff),
-    emissiveIntensity: 0.25,
-  })
-  const titan = new Mesh(titanGeo, titanMat)
+  const titan = new Group()
   titan.position.set(0, surfaceY(0, 0) + playerRadius, 0)
   scene.add(titan)
 
-  const titanBaseEmissive = titanMat.emissive.clone()
-  const titanBaseEmissiveIntensity = titanMat.emissiveIntensity
+  const titanSuitMat = new MeshPhysicalMaterial({
+    color: 0xeaf8ff,
+    roughness: 0.26,
+    metalness: 0.06,
+    clearcoat: 1,
+    clearcoatRoughness: 0.24,
+    emissive: new Color(0x083cff),
+    emissiveIntensity: 0.22,
+  })
+  const titanTrimMat = new MeshStandardMaterial({
+    color: 0x07143a,
+    roughness: 0.78,
+    metalness: 0.22,
+    emissive: new Color(0x031235),
+    emissiveIntensity: 0.2,
+  })
+  const titanVisorMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.85 })
+  const titanEyeMat = new MeshBasicMaterial({ color: 0x01020c })
+
+  const titanTorsoGeo = new CylinderGeometry(playerRadius * 0.48, playerRadius * 0.52, playerRadius * 0.72, 10, 1)
+  const titanHelmetGeo = new SphereGeometry(playerRadius * 0.48, 24, 18)
+  const titanBootGeo = new CylinderGeometry(playerRadius * 0.22, playerRadius * 0.26, playerRadius * 0.26, 8, 1)
+  const titanPackGeo = new BoxGeometry(playerRadius * 0.42, playerRadius * 0.46, playerRadius * 0.22)
+  const titanGunGeo = new CylinderGeometry(playerRadius * 0.13, playerRadius * 0.18, playerRadius * 0.62, 12, 1)
+  const titanVisorGeo = new SphereGeometry(playerRadius * 0.21, 18, 12, 0.2, Math.PI * 0.6, 0.2, Math.PI * 0.6)
+  const titanEyeGeo = new SphereGeometry(playerRadius * 0.06, 10, 10)
+
+  const torso = new Mesh(titanTorsoGeo, titanSuitMat)
+  torso.position.y = playerRadius * 0.26
+  titan.add(torso)
+
+  const helmet = new Mesh(titanHelmetGeo, titanSuitMat)
+  helmet.position.y = playerRadius * 0.78
+  titan.add(helmet)
+
+  const visor = new Mesh(titanVisorGeo, titanVisorMat)
+  visor.position.set(0, playerRadius * 0.78, playerRadius * 0.42)
+  visor.rotation.y = Math.PI
+  titan.add(visor)
+
+  const eyeL = new Mesh(titanEyeGeo, titanEyeMat)
+  eyeL.position.set(-playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
+  titan.add(eyeL)
+
+  const eyeR = new Mesh(titanEyeGeo, titanEyeMat)
+  eyeR.position.set(playerRadius * 0.14, playerRadius * 0.79, playerRadius * 0.44)
+  titan.add(eyeR)
+
+  const bootL = new Mesh(titanBootGeo, titanTrimMat)
+  bootL.position.set(-playerRadius * 0.24, playerRadius * 0.06, 0)
+  titan.add(bootL)
+
+  const bootR = new Mesh(titanBootGeo, titanTrimMat)
+  bootR.position.set(playerRadius * 0.24, playerRadius * 0.06, 0)
+  titan.add(bootR)
+
+  const pack = new Mesh(titanPackGeo, titanTrimMat)
+  pack.position.set(0, playerRadius * 0.44, -playerRadius * 0.46)
+  titan.add(pack)
+
+  const gun = new Mesh(titanGunGeo, titanTrimMat)
+  gun.rotation.x = Math.PI / 2
+  gun.position.set(0, playerRadius * 0.42, playerRadius * 0.66)
+  titan.add(gun)
+
+  const aimRingGeo = new TorusGeometry(playerRadius * 0.22, playerRadius * 0.035, 10, 22)
+  const aimRingMat = new MeshBasicMaterial({ color: 0xaef7ff, transparent: true, opacity: 0.75 })
+  const aimRing = new Mesh(aimRingGeo, aimRingMat)
+  aimRing.rotation.x = Math.PI / 2
+  aimRing.position.set(0, playerRadius * 0.42, playerRadius * 0.95)
+  titan.add(aimRing)
+
+  const headingGeo = new TorusGeometry(playerRadius * 0.95, playerRadius * 0.045, 10, 48)
+  const headingMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.22 })
+  const headingRing = new Mesh(headingGeo, headingMat)
+  headingRing.rotation.x = Math.PI / 2
+  headingRing.position.y = -playerRadius * 0.98
+  titan.add(headingRing)
+
+  const headingArrowGeo = new ConeGeometry(playerRadius * 0.14, playerRadius * 0.52, 10, 1)
+  const headingArrowMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.7 })
+  const headingArrow = new Mesh(headingArrowGeo, headingArrowMat)
+  headingArrow.rotation.x = -Math.PI / 2
+  headingArrow.position.set(0, -playerRadius * 0.98, -playerRadius * 0.82)
+  titan.add(headingArrow)
+
+  const titanBaseEmissive = titanSuitMat.emissive.clone()
+  const titanBaseEmissiveIntensity = titanSuitMat.emissiveIntensity
 
   let playerHealth = config.player.maxHealth
   let playerInvuln = 0
@@ -420,14 +498,22 @@ export const createPrototypeScene = (
     emissive: new Color(0x2b74ff),
     emissiveIntensity: 0.15,
   })
+  const projectileCoreGeo = new TorusGeometry(0.095, 0.02, 10, 20)
+  const projectileCoreMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.65 })
 
   const projectileRadius = 0.14
   const projectileSpeed = 18
   const projectileLifetime = 1.35
   const projectiles: Projectile[] = []
 
-  const chaserGeo = new IcosahedronGeometry(0.74, 2)
-  const skirterGeo = new OctahedronGeometry(0.7, 0)
+  const enemyBodyGeo = new SphereGeometry(0.62, 18, 14)
+  const enemyBellyGeo = new SphereGeometry(0.46, 16, 12)
+  const enemyEarGeo = new ConeGeometry(0.2, 0.32, 7, 1)
+  const enemyFinGeo = new ConeGeometry(0.22, 0.46, 6, 1)
+  const enemyEyeGeo = new SphereGeometry(0.06, 10, 10)
+  const enemyFaceGeo = new SphereGeometry(0.22, 14, 10)
+  const enemyEyeMat = new MeshBasicMaterial({ color: 0x01020c })
+  const enemySparkMat = new MeshBasicMaterial({ color: 0x6fff00, transparent: true, opacity: 0.55 })
 
   const chaserMatTemplate = new MeshStandardMaterial({
     color: 0xff62da,
@@ -448,10 +534,60 @@ export const createPrototypeScene = (
 
   const spawnEnemy = (archetype: EnemyArchetype, i: number) => {
     const material = (archetype === "chaser" ? chaserMatTemplate : skirterMatTemplate).clone()
-    const geometry = archetype === "chaser" ? chaserGeo : skirterGeo
-    const mesh = new Mesh(geometry, material)
-    const radius = archetype === "chaser" ? 0.78 : 0.68
+    const mesh = new Group()
+    const radius = archetype === "chaser" ? 0.82 : 0.74
     const maxHp = archetype === "chaser" ? 6 : 4
+
+    const body = new Mesh(enemyBodyGeo, material)
+    body.scale.setScalar(archetype === "chaser" ? 1.05 : 0.98)
+    mesh.add(body)
+
+    const belly = new Mesh(enemyBellyGeo, material)
+    belly.position.set(0, -0.18, 0.18)
+    belly.scale.setScalar(archetype === "chaser" ? 1.05 : 0.96)
+    mesh.add(belly)
+
+    const face = new Mesh(enemyFaceGeo, material)
+    face.position.set(0, 0.1, 0.52)
+    face.scale.set(1.1, 0.95, 0.9)
+    mesh.add(face)
+
+    const eyeL = new Mesh(enemyEyeGeo, enemyEyeMat)
+    eyeL.position.set(-0.14, 0.17, 0.7)
+    mesh.add(eyeL)
+
+    const eyeR = new Mesh(enemyEyeGeo, enemyEyeMat)
+    eyeR.position.set(0.14, 0.17, 0.7)
+    mesh.add(eyeR)
+
+    if (archetype === "chaser") {
+      const earL = new Mesh(enemyEarGeo, material)
+      earL.position.set(-0.34, 0.55, 0.1)
+      earL.rotation.set(-0.6, 0.2, 0.25)
+      mesh.add(earL)
+
+      const earR = new Mesh(enemyEarGeo, material)
+      earR.position.set(0.34, 0.55, 0.1)
+      earR.rotation.set(-0.6, -0.2, -0.25)
+      mesh.add(earR)
+    } else {
+      const finL = new Mesh(enemyFinGeo, material)
+      finL.position.set(-0.5, 0.22, -0.05)
+      finL.rotation.set(Math.PI / 2, 0.25, Math.PI / 3)
+      finL.scale.set(0.9, 1.05, 0.9)
+      mesh.add(finL)
+
+      const finR = new Mesh(enemyFinGeo, material)
+      finR.position.set(0.5, 0.22, -0.05)
+      finR.rotation.set(Math.PI / 2, -0.25, -Math.PI / 3)
+      finR.scale.set(0.9, 1.05, 0.9)
+      mesh.add(finR)
+
+      const spark = new Mesh(enemyEyeGeo, enemySparkMat)
+      spark.position.set(0, 0.62, -0.2)
+      spark.scale.setScalar(1.45)
+      mesh.add(spark)
+    }
 
     const angle = seeded(i + 101, 3) * Math.PI * 2
     const rr = Math.min(arenaRadius - 4, config.enemies.spawnRadius) * (0.75 + seeded(i + 203, 7) * 0.25)
@@ -467,8 +603,8 @@ export const createPrototypeScene = (
       velocity: new Vector3(),
       hp: maxHp,
       maxHp,
-      maxSpeed: archetype === "chaser" ? 4.9 : 5.6,
-      accel: archetype === "chaser" ? 16 : 20,
+      maxSpeed: archetype === "chaser" ? 2.95 : 3.35,
+      accel: archetype === "chaser" ? 9.5 : 10.5,
       orbitDistance: archetype === "chaser" ? 0 : 3.8,
       attackCooldown: 0,
       flash: 0,
@@ -501,6 +637,10 @@ export const createPrototypeScene = (
 
     const bubble = new Mesh(projectileGeo, projectileMat)
     bubble.position.copy(scratchOrigin)
+    const core = new Mesh(projectileCoreGeo, projectileCoreMat)
+    core.rotation.x = Math.PI / 2
+    core.rotation.z = Math.PI / 4
+    bubble.add(core)
     scene.add(bubble)
     projectiles.push({
       mesh: bubble,
@@ -614,7 +754,7 @@ export const createPrototypeScene = (
         .normalize()
     }
 
-    const maxSpeed = 6.1
+    const maxSpeed = config.player.maxSpeed
     desiredVelocity.copy(desiredMoveDir).multiplyScalar(maxSpeed * moveMag)
     const velLambda = rm ? 180 : moveMag > 0 ? 18 : 10
     playerVelocity.set(
@@ -650,11 +790,11 @@ export const createPrototypeScene = (
     titan.rotation.x = rm ? 0 : Math.sin(elapsed * 0.65) * 0.08
     if (playerFlash > 0) {
       const t = Math.min(1, playerFlash / 0.18)
-      titanMat.emissive.set(0xffffff)
-      titanMat.emissiveIntensity = titanBaseEmissiveIntensity + t * 2.15
+      titanSuitMat.emissive.set(0xffffff)
+      titanSuitMat.emissiveIntensity = titanBaseEmissiveIntensity + t * 2.15
     } else {
-      titanMat.emissive.copy(titanBaseEmissive)
-      titanMat.emissiveIntensity = titanBaseEmissiveIntensity
+      titanSuitMat.emissive.copy(titanBaseEmissive)
+      titanSuitMat.emissiveIntensity = titanBaseEmissiveIntensity
     }
 
     if (!rm) {
@@ -850,10 +990,24 @@ export const createPrototypeScene = (
     mushroomCapGeo.dispose()
     crystalGeo.dispose()
     rockGeo.dispose()
-    titanGeo.dispose()
     projectileGeo.dispose()
-    chaserGeo.dispose()
-    skirterGeo.dispose()
+    projectileCoreGeo.dispose()
+    enemyBodyGeo.dispose()
+    enemyBellyGeo.dispose()
+    enemyEarGeo.dispose()
+    enemyFinGeo.dispose()
+    enemyEyeGeo.dispose()
+    enemyFaceGeo.dispose()
+    titanTorsoGeo.dispose()
+    titanHelmetGeo.dispose()
+    titanBootGeo.dispose()
+    titanPackGeo.dispose()
+    titanGunGeo.dispose()
+    titanVisorGeo.dispose()
+    titanEyeGeo.dispose()
+    aimRingGeo.dispose()
+    headingGeo.dispose()
+    headingArrowGeo.dispose()
     sliceMat.dispose()
     atmosphereMat.dispose()
     mushroomStemMat.dispose()
@@ -864,10 +1018,19 @@ export const createPrototypeScene = (
     ;(particles?.material as PointsMaterial | undefined)?.dispose()
     damagePlaneGeo.dispose()
     damagePlaneMat.dispose()
-    titanMat.dispose()
+    titanSuitMat.dispose()
+    titanTrimMat.dispose()
+    titanVisorMat.dispose()
+    titanEyeMat.dispose()
+    aimRingMat.dispose()
+    headingMat.dispose()
+    headingArrowMat.dispose()
     projectileMat.dispose()
+    projectileCoreMat.dispose()
     chaserMatTemplate.dispose()
     skirterMatTemplate.dispose()
+    enemyEyeMat.dispose()
+    enemySparkMat.dispose()
   }
 
   return { scene, camera, shoot, update, getHudState, dispose }

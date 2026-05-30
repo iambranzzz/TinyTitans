@@ -62,13 +62,13 @@ export const defaultPrototypeConfig: PrototypeConfig = {
     sensitivity: 0.0033,
   },
   enemies: {
-    count: 8,
+    count: 6,
     spawnRadius: 15,
     detectRange: 18,
     separation: 1.25,
     attackRange: 1.25,
-    attackCooldown: 0.75,
-    damage: 12,
+    attackCooldown: 1.25,
+    damage: 7,
   },
 }
 
