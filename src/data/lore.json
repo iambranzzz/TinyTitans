@@ -1,0 +1,114 @@
+[
+  {
+    "id": "small-explorer-manifesto",
+    "title": "Small Explorer. Massive Adventure.",
+    "category": "history",
+    "snippet": "Tiny Titan’s first rule: if you can carry it, you can conquer it.",
+    "body": "Tiny Titans don’t win by being bigger. They win by being curious, quick, and stubborn enough to turn weird problems into wonderful solutions. The universe is full of places that look impossible until you take the first tiny step and realize the rules are bendier than they seem.\n\nIf a cliff is too tall, climb it. If the air is too thin, bottle it. If the monsters are too mean, distract them with something shinier. Adventure is not about the size of the danger; it’s about the size of the grin you wear while outsmarting it.",
+    "tags": ["tone", "brand", "exploration"],
+    "related": {
+      "planets": ["crystal-planet", "mushroom-planet", "ember-planet"],
+      "weapons": [],
+      "creatures": [],
+      "mounts": []
+    }
+  },
+  {
+    "id": "prismwell-resonance",
+    "title": "The Prism Well and the Quiet Storm",
+    "category": "mystery",
+    "snippet": "When the Orb Moths gather, the storm charge settles like a lullaby.",
+    "body": "On the Crystal Planet, storms don’t just strike. They sing. The Prism Well refracts more than light; it bends vibration. Travelers report that lightning slows when Orb Moths spiral around the nearest spires, as if the moths are tuning the air.\n\nGlowtails seem to know the pattern. They trace safe arcs across the ice right before the resonance peaks, leaving bright trails that mark routes through mirror crevasses. Some explorers believe the Prism Well is not a hole, but an instrument waiting for the right chord.",
+    "tags": ["crystal", "weather", "mystery"],
+    "related": {
+      "planets": ["crystal-planet"],
+      "weapons": [],
+      "creatures": ["orb-moth", "glowtail"],
+      "mounts": ["sky-whale"]
+    }
+  },
+  {
+    "id": "mycelium-memory",
+    "title": "Mycelium Memory: The Forest That Remembers",
+    "category": "history",
+    "snippet": "The Mushroom Planet records footsteps like ink on paper, then hides the page.",
+    "body": "The myco-jungle isn’t just alive; it’s connected. Every trunk and thread of mycelium shares pressure, warmth, and chemical messages. Old-timers say you can ask the Lantern Grove a question by walking a pattern through the clearing, then waiting for the glow to answer.\n\nThe Blink Hoppers treat the network like a playground. They flicker from root to root, teasing predators into chasing shadows. Chompers, on the other hand, listen for panic. The difference between a safe hike and a sudden snap is often the rhythm of your steps.",
+    "tags": ["mushroom", "network", "survival"],
+    "related": {
+      "planets": ["mushroom-planet"],
+      "weapons": ["bubble-blaster", "disco-ray"],
+      "creatures": ["blink-hopper", "chomper", "plasma-slime"],
+      "mounts": ["rocket-snail"]
+    }
+  },
+  {
+    "id": "emberstone-craft",
+    "title": "Emberstone Craft and Basalt Fiber",
+    "category": "tech",
+    "snippet": "The Ember Planet’s heat makes tools, not just trouble.",
+    "body": "Emberstone looks like rock until it warms up, then it behaves like a living ember trapped under glass. Blacksmiths who dare the vents spin basalt fibers into cords that don’t burn and don’t snap, perfect for gear that needs to survive ash cyclones.\n\nThe best builders learn to work with thermal breath instead of against it. Plasma Beetle riders use vent bursts like ramps. Gravity Hammer engineers swear the mini singularity coil stays stable longer when wrapped in basalt fiber, like the planet itself is holding the tool together.",
+    "tags": ["ember", "crafting", "gear"],
+    "related": {
+      "planets": ["ember-planet"],
+      "weapons": ["gravity-hammer"],
+      "creatures": ["titan-crab"],
+      "mounts": ["plasma-beetle", "sand-worm"]
+    }
+  },
+  {
+    "id": "bubble-foam-fieldwork",
+    "title": "Bubble Foam Fieldwork",
+    "category": "tech",
+    "snippet": "Foam isn’t a toy if it can hold a falling boulder.",
+    "body": "The Bubble Blaster’s foam cells expand into perfect spheres that distribute force across a smooth surface. That’s why bubbles can catch loose debris, cushion hard falls, and sometimes even suspend a grumpy creature long enough to escape.\n\nVeteran explorers don’t shoot bubbles at enemies; they shoot bubbles at the world. A bubble on a ledge becomes a step. A bubble in a vent stream becomes a drifting platform. Foam is the polite way to tell physics to calm down.",
+    "tags": ["gadget", "movement", "improvisation"],
+    "related": {
+      "planets": ["mushroom-planet", "crystal-planet"],
+      "weapons": ["bubble-blaster"],
+      "creatures": [],
+      "mounts": []
+    }
+  },
+  {
+    "id": "disco-ray-marks",
+    "title": "Neon Marks and the Disco Ray",
+    "category": "tech",
+    "snippet": "A bright target is a safer target—because you can see it coming.",
+    "body": "The Disco Ray doesn’t just stun. Its spectrum lens array paints a persistent neon mark that clings to armor, fur, or chitin and glows through dust and foliage. Explorers use the mark to track fleeing threats, but also to tag hazards for friends.\n\nIn the Lantern Grove, the light isn’t decoration. It’s language. Some swear the Grove responds better when a Disco Ray sweep matches the glow rhythm, as if the forest prefers messages in color instead of footsteps.",
+    "tags": ["weapon", "tracking", "light"],
+    "related": {
+      "planets": ["mushroom-planet"],
+      "weapons": ["disco-ray"],
+      "creatures": ["blink-hopper"],
+      "mounts": []
+    }
+  },
+  {
+    "id": "titan-crab-wardens",
+    "title": "The Vent Wardens",
+    "category": "mystery",
+    "snippet": "Titan Crabs don’t guard vents for warmth. They guard them for something older.",
+    "body": "Titan Crabs move like living fortresses, but their patrol routes are too consistent to be instinct. They circle the same vents in the same order, stopping to tap their claws against basalt like they’re checking locks.\n\nSomewhere beneath the Breathing Rift, something answers. The taps echo back with a delay that feels intentional. Explorers who linger claim the heat changes, as if the planet is listening.",
+    "tags": ["boss", "ember", "secrets"],
+    "related": {
+      "planets": ["ember-planet"],
+      "weapons": ["comet-cannon"],
+      "creatures": ["titan-crab"],
+      "mounts": ["sand-worm"]
+    }
+  },
+  {
+    "id": "sky-whale-migration",
+    "title": "Sky Whale Migration Lines",
+    "category": "history",
+    "snippet": "Sky Whales glide along invisible lanes that only crystals can reveal.",
+    "body": "Sky Whales don’t wander. They follow migration lines, as if the air itself has roads. On the Crystal Planet, Crown Ridge spires bend light into bands that match the whales’ routes. When the aurora is bright, the lanes are clear.\n\nExplorers who ride a Sky Whale learn quickly: you can’t force a lane. You have to trust it. The whale will drift toward the path that keeps you safe, even if it looks like it’s taking the long way around a storm.",
+    "tags": ["mount", "navigation", "crystal"],
+    "related": {
+      "planets": ["crystal-planet"],
+      "weapons": [],
+      "creatures": ["orb-moth"],
+      "mounts": ["sky-whale"]
+    }
+  }
+]

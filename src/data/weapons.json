@@ -1,0 +1,46 @@
+[
+  {
+    "id": "bubble-blaster",
+    "name": "Bubble Blaster",
+    "category": "gadget",
+    "tagline": "Contain chaos in a pop of foam.",
+    "description": "Fires elastic bubbles that trap small creatures and suspend loose objects for a few seconds.",
+    "primaryEffect": "Creates a buoyant bubble snare on hit",
+    "secondaryEffect": "Bubbles can be bounced into hazards or used as temporary stepping stones",
+    "energySource": "Compressed foam cells",
+    "unlockHint": "Perfect for the Mushroom Planet’s bouncy terrain."
+  },
+  {
+    "id": "gravity-hammer",
+    "name": "Gravity Hammer",
+    "category": "weapon",
+    "tagline": "One swing, one tiny moonquake.",
+    "description": "A compact hammer that generates a localized gravity pulse when it strikes, pulling enemies inward before launching them away.",
+    "primaryEffect": "Area gravity pulse on impact",
+    "secondaryEffect": "Can collapse brittle crystal formations to reveal paths",
+    "energySource": "Mini singularity coil",
+    "unlockHint": "Best used when you want enemies grouped and confused."
+  },
+  {
+    "id": "comet-cannon",
+    "name": "Comet Cannon",
+    "category": "weapon",
+    "tagline": "Throw a star and keep moving.",
+    "description": "Charges a streaking comet shot that pierces lines of targets and leaves a chilly wake.",
+    "primaryEffect": "Piercing projectile with a frost trail",
+    "secondaryEffect": "The wake briefly slows hazards like shard squalls or ash gusts",
+    "energySource": "Cryo-charge capacitor",
+    "unlockHint": "Pairs well with open arenas and long sightlines."
+  },
+  {
+    "id": "disco-ray",
+    "name": "Disco Ray",
+    "category": "weapon",
+    "tagline": "Dazzle first. Ask questions never.",
+    "description": "Emits a sweeping prism beam that stuns, confuses, and paints targets with neon marks visible through terrain.",
+    "primaryEffect": "Cone beam that stuns and applies a reveal mark",
+    "secondaryEffect": "Marked targets take bonus damage from follow-up hits",
+    "energySource": "Spectrum lens array",
+    "unlockHint": "For explorers who like their danger loud and colorful."
+  }
+]

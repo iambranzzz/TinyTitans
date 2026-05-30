@@ -1,0 +1,66 @@
+[
+  {
+    "id": "rocket-snail",
+    "name": "Rocket Snail",
+    "tagline": "Slow until it isn’t.",
+    "traversal": "ground",
+    "capabilities": [
+      "Bursts of straight-line speed",
+      "Sticky climbing on smooth surfaces",
+      "Shell shield when bracing"
+    ],
+    "habitatPlanetIds": ["mushroom-planet"],
+    "temperament": "docile",
+    "handling": "stable",
+    "topSpeedRating": 3,
+    "travelFantasy": "Ride a gentle snail that can suddenly blast forward like a pocket rocket, leaving a glittery contrail of spores."
+  },
+  {
+    "id": "plasma-beetle",
+    "name": "Plasma Beetle",
+    "tagline": "Armored sprint with a spark.",
+    "traversal": "ground",
+    "capabilities": [
+      "Dash through light obstacles",
+      "Short shockwave stomp",
+      "Carries heavy cargo"
+    ],
+    "habitatPlanetIds": ["ember-planet"],
+    "temperament": "bold",
+    "handling": "agile",
+    "topSpeedRating": 4,
+    "travelFantasy": "A crackling beetle mount that skitters over hot stone and dares the vents to keep up."
+  },
+  {
+    "id": "sky-whale",
+    "name": "Sky Whale",
+    "tagline": "Drift above the danger.",
+    "traversal": "air",
+    "capabilities": [
+      "Sustained gliding",
+      "Updraft surfing",
+      "Calming aura for nearby wildlife"
+    ],
+    "habitatPlanetIds": ["crystal-planet"],
+    "temperament": "gentle",
+    "handling": "floaty",
+    "topSpeedRating": 2,
+    "travelFantasy": "Climb onto a serene sky whale and glide through auroras like you’re swimming through light."
+  },
+  {
+    "id": "sand-worm",
+    "name": "Sand Worm",
+    "tagline": "Dive into the dune sea.",
+    "traversal": "burrow",
+    "capabilities": [
+      "Fast underground travel",
+      "Erupt leap to clear chasms",
+      "Detects nearby heat signatures"
+    ],
+    "habitatPlanetIds": ["ember-planet"],
+    "temperament": "wild",
+    "handling": "unpredictable",
+    "topSpeedRating": 5,
+    "travelFantasy": "Hold tight as a sand worm pulls you beneath the ember dunes and launches you out in a shower of glowing grit."
+  }
+]

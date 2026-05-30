@@ -1,0 +1,11 @@
+- [ ] “Play Prototype” entry point exists in the site and opens a full-screen playable overlay.
+- [ ] Prototype can always be exited via Exit button and `Esc` (no stuck pointer lock).
+- [ ] Third-person movement works (WASD) and camera orbit feels Roblox-like (character stays visible).
+- [ ] Bubble Blaster shoots projectiles and collisions register on enemies.
+- [ ] Enemies spawn and perform basic pursuit/attack behavior.
+- [ ] Player health decreases on enemy contact/attack and respawn/reset works.
+- [ ] HUD shows health + control hints and remains readable over gameplay.
+- [ ] Reduced-motion mode disables/reduces non-essential motion effects.
+- [ ] Game cleanly disposes on exit and can relaunch without errors.
+- [ ] `npm run build` and `npm run smoke` succeed.
+

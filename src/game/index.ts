@@ -1,0 +1,5 @@
+export { startPrototypeEngine, type PrototypeRuntime } from "./engine"
+export { createPrototypeScene, type PrototypeSceneBundle } from "./scene"
+export { loadPrototypeAssets, type PrototypeAssets } from "./loader"
+export { resolvePrototypeConfig, defaultPrototypeConfig, type PrototypeConfig } from "./config"
+export { default as PrototypeOverlay } from "./PrototypeOverlay"

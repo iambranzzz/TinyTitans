@@ -1,0 +1,11 @@
+- [x] Trailer hero renders and trailer playback works with fullscreen support.
+- [x] Planets section shows 3 planets with clickable details (description, environment, native creatures).
+- [x] Weapons section shows 4 weapons with interactive/animated card behavior.
+- [x] Mounts section shows 4 mounts with interactive expanded details.
+- [x] Creature encyclopedia shows 6 creatures with expandable info panels.
+- [x] Planet vote persists via localStorage and results update immediately after voting.
+- [x] Galactic Guide answers questions using lore, displays sources, and gracefully falls back when OpenAI is unavailable.
+- [x] Page is responsive (mobile + desktop) with smooth scrolling and usable touch targets.
+- [x] Keyboard navigation and focus states work across interactive elements.
+- [x] Reduced-motion preference is respected for non-essential animations.
+- [x] Production build succeeds and primary flows run without console errors.

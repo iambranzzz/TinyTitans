@@ -1,0 +1,77 @@
+[
+  {
+    "id": "crystal-planet",
+    "name": "Crystal Planet",
+    "tagline": "Glittering shards and harmonic storms.",
+    "description": "A frozen world of prismatic glass dunes and singing quartz ridges. Lightning skates across crystal spires, turning the horizon into a shifting aurora.",
+    "environment": {
+      "biome": "Prismatic tundra",
+      "atmosphere": "Thin, ionized, and bright with static haze",
+      "hazards": ["Shard squalls", "Resonance lightning", "Mirror crevasses"],
+      "resources": ["Singing quartz", "Refraction ice", "Polar starlight moss"]
+    },
+    "pointsOfInterest": [
+      {
+        "id": "crown-ridge",
+        "name": "Crown Ridge",
+        "detail": "A ring of crown-like spires that hum in chords when the wind passes through."
+      },
+      {
+        "id": "the-prism-well",
+        "name": "The Prism Well",
+        "detail": "A deep sinkhole lined with faceted ice that bends light into impossible colors."
+      }
+    ],
+    "nativeCreatureIds": ["glowtail", "orb-moth"]
+  },
+  {
+    "id": "mushroom-planet",
+    "name": "Mushroom Planet",
+    "tagline": "A bioluminescent forest that breathes.",
+    "description": "Towering fungal trunks form a living canopy, pulsing with soft light and drifting spores. The ground is springy, warm, and full of hidden tunnels.",
+    "environment": {
+      "biome": "Myco-jungle",
+      "atmosphere": "Humid and spore-rich with gentle updrafts",
+      "hazards": ["Spore blooms", "Sinkroot pits", "Hallucination pollen"],
+      "resources": ["Glow caps", "Elastic mycelium", "Spore ink"]
+    },
+    "pointsOfInterest": [
+      {
+        "id": "lantern-grove",
+        "name": "Lantern Grove",
+        "detail": "A clearing where mushrooms glow in synchrony, mapping star patterns onto the forest floor."
+      },
+      {
+        "id": "the-mycelium-cathedral",
+        "name": "The Mycelium Cathedral",
+        "detail": "A vaulted network of root-arches that echoes like a drum when creatures pass above."
+      }
+    ],
+    "nativeCreatureIds": ["chomper", "blink-hopper", "plasma-slime"]
+  },
+  {
+    "id": "ember-planet",
+    "name": "Ember Planet",
+    "tagline": "Heat, ash, and glowing tides of sand.",
+    "description": "A scorched planet of basalt shelves and ember dunes where heat shimmers like water. Volcanic vents exhale orange mist, and the night sky is painted by falling sparks.",
+    "environment": {
+      "biome": "Volcanic badlands",
+      "atmosphere": "Dense with ash and warm pressure fronts",
+      "hazards": ["Lava vents", "Ash cyclones", "Glass sand tides"],
+      "resources": ["Emberstone", "Basalt fiber", "Thermal salts"]
+    },
+    "pointsOfInterest": [
+      {
+        "id": "the-breathing-rift",
+        "name": "The Breathing Rift",
+        "detail": "A crack in the crust that exhales in rhythmic bursts, like a giant sleeping beast."
+      },
+      {
+        "id": "cinder-shore",
+        "name": "Cinder Shore",
+        "detail": "A coastline of black sand where molten beads cool into tiny pearls at the waterline."
+      }
+    ],
+    "nativeCreatureIds": ["titan-crab"]
+  }
+]

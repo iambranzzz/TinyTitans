@@ -1,0 +1,11 @@
+- [x] `ui-ux-pro-max` skill exists in `.trae/skills/ui-ux-pro-max/` and its `--design-system` command runs for this project.
+- [x] Fonts load and apply: Anton for headings/nav, Condiment for accents, monospace for body text.
+- [x] Tailwind color system is applied globally: background `#010828`, text `cream`, accents `neon`.
+- [x] `.liquid-glass` matches the provided reference effect and is applied to nav/buttons/cards/overlays consistently.
+- [x] Full-screen `texture.png` overlay is present, fixed, non-interactive, and visually correct (lighten blend, opacity 0.6).
+- [x] Navigation matches reference styling (desktop capsule hidden on mobile, mobile menu styled consistently) and section highlighting still works.
+- [x] Hero and section headings use the new typography system, with tasteful Condiment neon accents that do not hurt readability.
+- [x] All existing Tiny Titan functionality still works (trailer lightbox + fullscreen, details drawers, vote persistence, Galactic Guide answer + sources).
+- [x] Motion is smooth and demo-safe; animations are transform/opacity based and do not cause jank.
+- [x] `prefers-reduced-motion` disables/reduces non-essential animations.
+- [x] `npm run smoke` and `npm run build` succeed.

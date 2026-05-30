@@ -1,0 +1,62 @@
+[
+  {
+    "id": "chomper",
+    "name": "Chomper",
+    "role": "hostile",
+    "behavior": "An ambush predator that hides beneath mushroom mats and snaps upward when footsteps vibrate the ground.",
+    "fieldNote": "If the spores suddenly go quiet, stop moving. The quiet is the trap.",
+    "habitatPlanetIds": ["mushroom-planet"],
+    "dangerRating": 4,
+    "tags": ["ambush", "predator", "fungal-forest"]
+  },
+  {
+    "id": "plasma-slime",
+    "name": "Plasma Slime",
+    "role": "passive",
+    "behavior": "A gelatinous drifter that absorbs ambient charge and sheds it as harmless sparkles when startled.",
+    "fieldNote": "It loves warmth. Your visor heater will attract them like tiny living lanterns.",
+    "habitatPlanetIds": ["mushroom-planet"],
+    "dangerRating": 1,
+    "tags": ["bioluminescent", "electric", "curious"]
+  },
+  {
+    "id": "blink-hopper",
+    "name": "Blink Hopper",
+    "role": "neutral",
+    "behavior": "Skips between short-range positions in flickers of light, usually to avoid predators or to steal shiny gear.",
+    "fieldNote": "Do not chase. It will always appear behind you, as if offended by physics.",
+    "habitatPlanetIds": ["mushroom-planet"],
+    "dangerRating": 2,
+    "tags": ["teleport", "mischief", "fast"]
+  },
+  {
+    "id": "titan-crab",
+    "name": "Titan Crab",
+    "role": "hostile",
+    "behavior": "A massive crustacean that patrols basalt shelves, defending thermal vents like territory markers.",
+    "fieldNote": "Its shell isn’t armor; it’s a furnace. Keep distance, or your tools will soften in your hands.",
+    "habitatPlanetIds": ["ember-planet"],
+    "dangerRating": 5,
+    "tags": ["boss", "armored", "heat"]
+  },
+  {
+    "id": "glowtail",
+    "name": "Glowtail",
+    "role": "passive",
+    "behavior": "A skittish, comet-tailed scavenger that feeds on starlight moss and leaves a ribbon of luminescence behind it.",
+    "fieldNote": "Follow its trail to find safe footing; it avoids mirror crevasses instinctively.",
+    "habitatPlanetIds": ["crystal-planet"],
+    "dangerRating": 1,
+    "tags": ["guide", "luminescent", "scavenger"]
+  },
+  {
+    "id": "orb-moth",
+    "name": "Orb Moth",
+    "role": "neutral",
+    "behavior": "Floats in slow spirals around crystal spires, bathing them in soft, refracted light that calms storm charge.",
+    "fieldNote": "When they gather, lightning sleeps. When they scatter, brace for a shard squall.",
+    "habitatPlanetIds": ["crystal-planet"],
+    "dangerRating": 2,
+    "tags": ["weather", "swarm", "aerial"]
+  }
+]
